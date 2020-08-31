@@ -1,5 +1,5 @@
 /* Checking all the variables for separation concerns by seeing if any of their levels  */
-/* have 0s for either level of the target variables -- Ike Ingle 8/30/20*/
+/* have 0s for either level of the target variables */
 
 proc freq data=lrhw1.insurance_t_bin;
 	tables (_all_)*ins;
