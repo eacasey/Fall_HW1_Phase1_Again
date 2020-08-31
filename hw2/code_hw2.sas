@@ -303,7 +303,7 @@ run;
 /************************************************************/
 
 
-data t_bin_nomissing;
+data lrhw1.t_transform;
 	set hw_data.insurance_t_bin;
 	if cc = "." then cc_2=2; *2 = missing category;
 	else cc_2=cc;
@@ -327,7 +327,7 @@ run;
 /* Do transformation on them now to roll up the 2nd level into the first for Number of Cash Back */
 /* and the 5th level of Money Market Credits  */
 
-data lrhw1.insurance_t_rollup;
+data lrhw1.t_transform;
 	set lrhw1.insurance_t_bin;
  	if cashbk = 2 then cashbk = 1; /* this adjusts for the only 2 obs that had a 2 for cashbk and were both 0's for ins */
 	if mmcred = 5 then mmcred = 3; /* this adjusts for only 1 obs w/ a mmcred = 5 and rolls up to 3 since 0 obs = 4*/
