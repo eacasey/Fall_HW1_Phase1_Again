@@ -78,4 +78,22 @@ data dep1;
 	set dep;
 	format probchisq dollar30.29;
 RUN;
+/*Running interaction model with the main effects from our first model*/
+ods output parameterestimates=dep;
+proc logistic data=logreg.insurance_t_rollup;
+	class DDABAL_Bin(PARAM=REF REF='1') Checks_Bin Teller_bin savbal_bin atmamt_bin cdbal_bin
+	model INS(event='1')= DDA|SAV|ATM|IRA|INV|MM|DDABAL_Bin |Checks_Bin| Teller_bin| savbal_bin| atmamt_bin | cdbal_bin @2 / hierarchy=single 
+selection=forward slentry=.002 clodds=pl clparm=pl;
+	title 'Testing Interactions using main effects model';
+run;
+/*Final interaction model with entry significance level of .002
+is DDA SAV IRA INVMM DDABAL_Bin CHECKS_bin teller_bin 
+savbal_bin dda*savbal_bin ddabal_bin*savbal_bin checks_bin*savbal_bin atmamt_bin cdbal_bin*/
 
+/*Display full p values to compare predictor variables*/
+data dep1;
+	set dep;
+	format probchisq dollar30.29;
+RUN;
+proc print data=dep1;
+run;
