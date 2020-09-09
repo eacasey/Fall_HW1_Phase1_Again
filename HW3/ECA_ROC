@@ -1,0 +1,54 @@
+#Ellie Casey
+#HW3: Creatinig ROC curve
+#Tuesday, Sept. 8, 2020
+
+########################################################################
+library(ggplot2)
+library(dplyr)
+library(sas7bdat)
+library(plotROC)
+library(ROCR)
+library(pROC)
+setwd("/Users/ellie/Documents/NC State/Fall I/Logistic Regression - Dr. LaBarr/Homework3_LR")
+########################################################################
+insurance_t_bin <- read.sas7bdat("insurance_t_bin.sas7bdat")
+
+str(insurance_t_bin$CC)
+str(insurance_t_bin$CCPURC)
+
+insurance_t_bin1 <- insurance_t_bin %>%
+  mutate(cc_2 = ifelse((CC=="NaN"), 2, CC)) %>%
+  mutate(ccpurc_2 = ifelse((CCPURC=="NaN"), 5, CCPURC)) %>%
+  #select(ccpurc_2, CCPURC)
+  mutate(hmown_2 = ifelse((HMOWN=="NaN"), 2, HMOWN))%>%
+  mutate(inv_2 = ifelse((INV=="NaN"), 2, INV)) %>%
+  mutate(CASHBK=ifelse((CASHBK==2),1,CASHBK)) %>%
+  mutate(MMCRED=ifelse((MMCRED==5),3,MMCRED))
+  #select(cc_2,CC,ccpurc_2,CCPURC,hmown_2,HMOWN,inv_2,INV,CASHBK,MMCRED)
+########################################################################
+train_logit <- insurance_t_bin1 %>%
+  select(MMCRED, CASHBK, inv_2, hmown_2, ccpurc_2, cc_2,DDABAL_Bin, 
+         ACCTAGE_Bin, DEPAMT_Bin, CHECKS_Bin, NSFAMT_Bin, PHONE_Bin, 
+         TELLER_Bin, SAVBAL_Bin, ATMAMT_Bin, POS_Bin, POSAMT_Bin, CDBAL_Bin,
+         IRABAL_Bin, LOCBAL_Bin, INVBAL_Bin, ILSBAL_Bin, MMBAL_Bin, MTGBAL_Bin, 
+         CCBAL_Bin, INCOME_Bin, LORES_Bin, HMVAL_Bin, AGE_Bin, CRSCORE_Bin, INS)
+
+binary_log_r <- glm(INS ~ MMCRED+ CASHBK+ inv_2+ hmown_2+ ccpurc_2+ cc_2+DDABAL_Bin+ 
+                   ACCTAGE_Bin+ DEPAMT_Bin+ CHECKS_Bin+ NSFAMT_Bin+ PHONE_Bin+ 
+                   TELLER_Bin+ SAVBAL_Bin+ ATMAMT_Bin+ POS_Bin+ POSAMT_Bin+ CDBAL_Bin+
+                   IRABAL_Bin+ LOCBAL_Bin+ INVBAL_Bin+ ILSBAL_Bin+ MMBAL_Bin+ MTGBAL_Bin+ 
+                   CCBAL_Bin+ INCOME_Bin+ LORES_Bin+ HMVAL_Bin+ AGE_Bin+ CRSCORE_Bin,
+                   data =train_logit, family=binomial(link="logit"))
+
+summary(binary_log_r)
+
+pred <- prediction(fitted(binary_log_r), factor(train_logit$INS))
+perf <- performance(pred, measure = "tpr", x.measure = "fpr")
+summary(perf)
+
+
+########################################################################
+plot(perf, lwd=3, colorize = TRUE, colorkey = TRUE,
+        colorize.palette = rev(gray.colors(256)), main="ROC Curve")
+abline(a = 0, b = 1, lty = 3)
+########################################################################
