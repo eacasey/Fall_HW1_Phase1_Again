@@ -184,7 +184,7 @@ quit;
 proc univariate data=score;
 	var p_1;
 run;
-/* The 3rd quantile was = to a p_1 val of 0.5289499 */
+/* The 3rd quartile was = to a p_1 val of 0.5289499 */
 
 data lift_cutoff;
 	set score;
