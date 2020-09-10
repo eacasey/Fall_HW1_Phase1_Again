@@ -197,6 +197,11 @@ run;
 proc freq data = lift_cutoff;
 	tables actual*predicted;
 run;
+/* Current Model Stats on valid set with a .52849499 cutoff */
+/* accuracy = 72.74% */
+/* Sensitivity/Recall(TPR) = 46.77% */
+/* 1 - specificity(FPR) = 13.31% */
+/* Precision (PPV) = 65.35% */
 
 /* Since no real estimates available for false negs/pos's going to just show the lift suggested one and the Youden/F1 */
 /* to demonstrate potential differences in quality of prediction vs quantity that might matter depending on marekting costs */
