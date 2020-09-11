@@ -223,9 +223,9 @@ HMVAL_BIN AGE_BIN CRSCORE_BIN;
 %LET main_ordinal =  MMCRED CCPURC_2(PARAM=REF REF='0') DDABAL_BIN(PARAM=REF REF='1') ACCTAGE_BIN DEPAMT_BIN CHECKS_BIN NSFAMT_BIN PHONE_BIN TELLER_BIN
 		     SAVBAL_BIN ATMAMT_BIN POS_BIN POSAMT_BIN CDBAL_BIN IRABAL_BIN LOCBAL_BIN INVBAL_BIN
  		     ILSBAL_BIN MMBAL_BIN MTGBAL_BIN CCBAL_BIN INCOME_BIN LORES_BIN HMVAL_BIN AGE_BIN CRSCORE_BIN;
-
+/*ROC curve*/
 /* Trying to access previous model here by recreating through same code as before but w outmodel statement for later use */
-proc logistic data=LRHW1.t_transform outmodel=train_model plots(only)=(oddsratio);
+proc logistic data=LRHW1.t_transform outmodel=train_model plots(only)=(oddsratio ROC);
 	CLASS  &main_ordinal BRANCH RES  CC_2(PARAM=REF REF='0') 
 		   HMOWN_2(PARAM=REF REF='0') INV_2(PARAM=REF REF='0') ;
 	model INS(event='1') = &MAINEFFECTS / 
