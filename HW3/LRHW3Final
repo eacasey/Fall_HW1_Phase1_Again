@@ -73,3 +73,127 @@ run;
 
 /* k-s statistic = 0.4778 */
 /* Value of phat at Maximum = 0.288265 */
+/*compare ROC curves*/
+proc logistic data=LRHW3.T_TRANSFORM;
+	class 
+	DDA 
+	NSF 
+	IRA
+	inv_2 (param=ref ref='0')
+	ILS 
+	MM 
+	cc_2 (param=ref ref='0')
+	BRANCH (param=effect ref='B9')
+	DDABAL_Bin (param=ref ref='1')
+	CHECKS_Bin (param=effect ref='4')
+	TELLER_Bin (param=effect ref='3')
+	SAVBAL_Bin (param=effect ref='7')
+	ATMAMT_Bin (param=effect ref='3')
+	CDBAL_Bin (param=effect ref='3');
+	model INS(event = '1') = DDA NSF IRA inv_2 ILS MM cc_2 BRANCH DDABAL_Bin
+	CHECKS_Bin TELLER_Bin SAVBAL_Bin ATMAMT_Bin CDBAL_Bin / clodds=pl clparm=pl;
+	ROC 'omit DDA' NSF IRA inv_2 ILS MM cc_2 BRANCH DDABAL_Bin
+	CHECKS_Bin TELLER_Bin SAVBAL_Bin ATMAMT_Bin CDBAL_Bin;
+	* add other curves;
+	roccontrast / estimate = allpairs;
+run;
+
+/*create a confusion matrix with different thresholds*/
+
+data lrhw3.v_transform;
+	set lrhw2.insurance_v_bin;
+	if cc = . then cc_2=2; *2 = missing category;
+	else cc_2=cc;
+	if ccpurc = . then ccpurc_2=5; *5 is missing category;
+	else ccpurc_2=ccpurc;
+	if hmown="." then hmown_2 =2; *2 is missing category;
+	else hmown_2=hmown;
+	if inv="." then inv_2=2; *2 is missing category;
+	else inv_2=inv;
+	if cashbk = 2 then cashbk = 1; /* this adjusts for the only 2 obs that had a 2 for cashbk and were both 0's for ins */
+	if mmcred = 5 then mmcred = 3; /* this adjusts for only 1 obs w/ a mmcred = 5 and rolls up to 3 since 0 obs = 4*/
+run;
+
+proc logistic inmodel=lrhw3.our_training_model;
+	score data=lrhw3.v_transform out=lrhw3.valid_fit;
+run;
+
+data lrhw3.compare_cutoffs;
+	set lrhw3.valid_fit;
+	keep Actual Predicted P_0 P_1 Youden_cutoff F1_cutoff KS_cutoff;
+	Actual = F_INS;
+	Predicted = I_INS;
+	Youden_cutoff = 0.290;
+	F1_cutoff = 0.290;
+	KS_cutoff = 0.296560;
+run;
+
+data lrhw3.youden_F1_matrix;
+	set lrhw3.compare_cutoffs;
+	keep TP TN FP FN;
+	cutoff = Youden_cutoff;
+	TP = 0;
+	TN = 0;
+	FP = 0;
+	FN = 0;
+	if P_1 > cutoff and Actual = 1 then TP = 1;
+	else if P_1 > cutoff and Actual = 0 then FP = 1;
+	else if P_1 < cutoff and Actual = 0 then TN = 1;
+	else if P_1 < cutoff and Actual = 1 then FN = 1;
+run;
+
+data lrhw3.KS_matrix;
+	set lrhw3.compare_cutoffs;
+	keep TP TN FP FN;
+	cutoff = KS_cutoff;
+	TP = 0;
+	TN = 0;
+	FP = 0;
+	FN = 0;
+	if P_1 > cutoff and Actual = 1 then TP = 1;
+	else if P_1 > cutoff and Actual = 0 then FP = 1;
+	else if P_1 < cutoff and Actual = 0 then TN = 1;
+	else if P_1 < cutoff and Actual = 1 then FN = 1;
+run;
+
+proc export data=lrhw3.youden_F1_matrix
+outfile = '/home/u42027047/Fall_LogisticRegression/HW/HW3/outfiles/lrhw3.youden_F1_matrix.csv'
+dbms=csv replace;
+run;
+
+proc export data=lrhw3.KS_matrix
+outfile = '/home/u42027047/Fall_LogisticRegression/HW/HW3/outfiles/lrhw3.KS_matrix.csv'
+dbms=csv replace;
+run;	
+
+data lrhw3.matrix_05;
+	set lrhw3.compare_cutoffs;
+	keep TP TN FP FN;
+	cutoff = 0.5;
+	TP = 0;
+	TN = 0;
+	FP = 0;
+	FN = 0;
+	if P_1 > cutoff and Actual = 1 then TP = 1;
+	else if P_1 > cutoff and Actual = 0 then FP = 1;
+	else if P_1 < cutoff and Actual = 0 then TN = 1;
+	else if P_1 < cutoff and Actual = 1 then FN = 1;
+run;
+proc export data=lrhw3.matrix_05
+outfile = '/home/u42027047/Fall_LogisticRegression/HW/HW3/outfiles/lrhw3.matrix_05.csv'
+dbms=csv replace;
+run;
+
+data lrhw3.matrix_08;
+	set lrhw3.compare_cutoffs;
+	keep TP TN FP FN;
+	cutoff = 0.8;
+	TP = 0;
+	TN = 0;
+	FP = 0;
+	FN = 0;
+	if P_1 > cutoff and Actual = 1 then TP = 1;
+	else if P_1 > cutoff and Actual = 0 then FP = 1;
+	else if P_1 < cutoff and Actual = 0 then TN = 1;
+	else if P_1 < cutoff and Actual = 1 then FN = 1;
+run;
