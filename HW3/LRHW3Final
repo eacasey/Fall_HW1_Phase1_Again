@@ -56,3 +56,20 @@ proc ttest data=predprobs order=data;
 	var phat;
 	title 'Coefficient of Discrimination and Plots';
 run;
+
+/* Running regression */
+
+proc logistic data=LRHW3.t_transform noprint;
+	CLASS &main_ordinal BRANCH RES  CC_2(PARAM=REF REF='0') 
+		   HMOWN_2(PARAM=REF REF='0') INV_2(PARAM=REF REF='0');
+	model INS(event='1') = &MAINEFFECTS;
+	output out = predprobs p = phat;
+run;
+
+proc npar1way data = predprobs d plot = edfplot;
+	CLASS INS; *dependent variable here;
+	var phat;
+run;
+
+/* k-s statistic = 0.4778 */
+/* Value of phat at Maximum = 0.288265 */
